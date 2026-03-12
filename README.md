@@ -101,6 +101,20 @@ python codex_register.py --count 20 --workers 5
 - 若缓存中的 `date` 与当前日期不一致，会先删除旧 `proxy_cache.json`，再重建当天缓存。
 - 个人代理池构建脚本就不上传到仓库了，如果没有合适的代理，可用使用本人的另一个项目（[warp-proxy-docker](https://github.com/kschen202115/warp-proxy-docker)）
 
+`proxy_cache.json`内结构如下
+```bash
+{
+    "date": "2026-03-10",//更新时间
+    "usable": [//可用列表
+        {
+            "proxy": "127.0.0.1:1080",//地址：端口和可用的协议
+            "http": false,
+            "socks4": false,
+            "socks5": true
+        }
+    ]
+}
+```
 ## 常见问题
 
 1. MailAPI 查询失败
