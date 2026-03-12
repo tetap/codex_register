@@ -9,7 +9,7 @@
 ## 项目结构
 
 ```text
-api_register.py      # 主流程：并发执行、验证码轮询、结果保存、上传
+codex_register.py      # 主流程：并发执行、验证码轮询、结果保存、上传
 mailapi.py           # MailAPI 封装：查询邮件并提取 6 位验证码
 proxy_cache.json     # 代理缓存（可选）
 tokens/              # 生成结果目录（自动创建）
@@ -39,7 +39,7 @@ pip install -r requirements.txt
 
 ## 配置说明
 
-在 `api_register.py` 中配置以下常量（当前已脱敏为占位值）：
+在 `codex_register.py` 中配置以下常量（当前已脱敏为占位值）：
 
 ```python
 EMAIL_DOMAINS = ["example1.com", "example2.com", "example3.com", "example4.com"]
@@ -62,7 +62,7 @@ MAIL_API_AUTH = "your-mailapi-auth"
 在项目目录执行：
 
 ```bash
-python api_register.py
+python codex_register.py
 ```
 
 参数：
@@ -72,8 +72,8 @@ python api_register.py
 示例：
 
 ```bash
-python api_register.py --count 1 --workers 1
-python api_register.py --count 20 --workers 5
+python codex_register.py --count 1 --workers 1
+python codex_register.py --count 20 --workers 5
 ```
 
 ## 运行流程（按当前代码）
@@ -87,13 +87,13 @@ python api_register.py --count 20 --workers 5
 
 ## 输出说明
 
-- 日志文件：`api_register.log`
+- 日志文件：`codex_register.log`
 - token 结果：`tokens/<email>--<password>.json`
 - 统计输出：成功数、失败数、总耗时
 
 ## 代理池说明
 
-`api_register.py` 只负责读取 `proxy_cache.json` 并随机使用。
+`codex_register.py` 只负责读取 `proxy_cache.json` 并随机使用。
 
 缓存规则（按当前代码）：
 - 以 UTC 日期 (`YYYY-MM-DD`) 作为缓存时间标记。
