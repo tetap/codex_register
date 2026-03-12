@@ -33,9 +33,24 @@ class MailAPI:
             return None
 
         raw = data["results"][0]["raw"]
+        # print("邮件内容:", raw)
 
-        # 提取6位验证码
-        match = re.search(r"\b\d{6}\b", raw)
+        # 优先级 1：精准上下文匹配 (支持 "code is 580658", "Code: 580658", 忽略大小写)
+        # (?i) 忽略大小写
+        # (?:code[\s:]*(?:is\s*)?) 匹配 "code is ", "code: ", "code " 等前缀
+        match = re.search(r"(?i)(?:code[\s:]*(?:is\s*)?)(\d{6})\b", raw)
+        if match:
+            return match.group(1) # 注意这里用 group(1) 提取括号内的纯数字
+
+        # 优先级 2：宽泛上下文匹配（匹配标题或正文附近的 ChatGPT 验证码）
+        match = re.search(r"(?i)(?:chatgpt|openai|verification)[\s\S]{0,30}?\b(\d{6})\b", raw)
+        if match:
+            return match.group(1)
+
+        # 优先级 3：兜底匹配（原逻辑升级版）
+        # (?<!#) 是负向零宽断言，防止匹配到 HTML 颜色代码例如 #123456
+        # (?<!\d) 和 (?!\d) 确保它严格只是 6 位，前后没有连着的数字
+        match = re.search(r"(?<!#)(?<!\d)\b\d{6}\b(?!\d)", raw)
         if match:
             return match.group(0)
 
@@ -49,4 +64,5 @@ if __name__ == "__main__":
     )
 
     code = api.get_latest_code("xxxxxxxx@xxxx.xxx")
+
     print("验证码:", code)
