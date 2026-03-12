@@ -76,6 +76,7 @@ python codex_register.py
 python codex_register.py --count 1 --workers 1
 python codex_register.py --count 20 --workers 5
 ```
+<img width="889" height="482" alt="image" src="https://github.com/user-attachments/assets/323147d4-65d1-4cfd-8d9b-b5fcaee6f010" />
 
 ## 运行流程（按当前代码）
 
