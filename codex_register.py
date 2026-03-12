@@ -1,5 +1,5 @@
 """
-codex 账号协议注册（纯 HTTP API 版）
+codex 账号协议注册
 直接调用 OpenAI 认证接口完成注册流程，无需浏览器。
 通过 MailAPI 获取验证码。
 
@@ -61,7 +61,7 @@ PROXY_CACHE_FILE = os.path.join(SCRIPT_DIR, "proxy_cache.json")
 # 邮箱后缀
 EMAIL_DOMAINS = ["example1.com", "example2.com", "example3.com", "example4.com"]
 # Token 上传服务器
-CPA_URL = "http://your-server:port"
+CPA_URL = ""#http://your-server:port
 MANAGEMENT_KEY = "your-management-key"
 # MailAPI 配置（固定）
 MAIL_API_URL = "https://mail.example.com"
@@ -826,13 +826,13 @@ def upload_and_cleanup(directory: str):
 # 主入口
 # ═══════════════════════════════════════════════════════
 def main():
-    parser = argparse.ArgumentParser(description="OpenAI 协议注册（纯 API 版）")
+    parser = argparse.ArgumentParser(description="codex 注册机")
     parser.add_argument("--workers", type=int, default=1, help="并发线程数")
     parser.add_argument("--count", type=int, default=5, help="注册数量")
     args = parser.parse_args()
 
     log.info("=" * 55)
-    log.info("  OpenAI 协议注册 v1.0")
+    log.info(" codex 注册机")
     log.info("=" * 55)
 
     mail_api = MailAPI(worker_url=MAIL_API_URL, admin_auth=MAIL_API_AUTH)
@@ -887,9 +887,10 @@ def main():
     log.info(f"  📁 结果: {RESULTS_DIR}")
 
     # 上传并清理
-    if stats["ok"] > 0:
+    if stats["ok"] > 0 and CPA_URL:
         upload_and_cleanup(RESULTS_DIR)
 
 
 if __name__ == "__main__":
     main()
+
