@@ -29,6 +29,7 @@ import argparse
 
 from curl_cffi import requests as cffi_requests
 from mailapi import MailAPI
+from sentinel_pow import build_sentinel_pow_token, SentinelPOWError
 
 # ═══════════════════════════════════════════════════════
 # 常量配置
@@ -509,25 +510,40 @@ def register_account(
 
         _sleep(0.8, 2.0)
 
-        # --- 2. 获取 Sentinel 反机器人令牌 ---
+        # --- 2. 获取 Sentinel 反机器人令牌 (含 PoW 求解) ---
         _check_cancel()
-        log.info(f"  [2] 获取 Sentinel token...")
-        sentinel_body = {"p": "", "id": device_id, "flow": "authorize_continue"}
-        sentinel_resp = http.post_json(
-            OAI_SENTINEL_URL, sentinel_body,
+        log.info(f"  [2] 求解 Sentinel PoW...")
+        # 使用 curl_cffi 会话内置的 User-Agent（由 impersonate 自动生成）
+        ua = http._session.headers.get("User-Agent", "Mozilla/5.0")
+        try:
+            pow_token = build_sentinel_pow_token(ua)
+        except SentinelPOWError as e:
+            raise RuntimeError(f"Sentinel PoW 求解失败: {e}")
+        log.info(f"      PoW token 已生成")
+
+        sentinel_body = json.dumps({
+            "p": pow_token,
+            "id": device_id,
+            "flow": "authorize_continue",
+        }, separators=(",", ":"))
+        sentinel_resp = http._session.post(
+            OAI_SENTINEL_URL,
+            data=sentinel_body,
             headers={
                 "Origin": "https://sentinel.openai.com",
-                "Referer": "https://sentinel.openai.com/backend-api/sentinel/frame.html",
-            }
+                "Referer": "https://sentinel.openai.com/backend-api/sentinel/frame.html?sv=20260219f9f6",
+                "Content-Type": "text/plain;charset=UTF-8",
+            },
+            timeout=30,
         )
-        if not sentinel_resp.ok():
-            raise RuntimeError(f"Sentinel 失败: {sentinel_resp.status} {sentinel_resp.text[:200]}")
+        if sentinel_resp.status_code < 200 or sentinel_resp.status_code >= 300:
+            raise RuntimeError(f"Sentinel 失败: {sentinel_resp.status_code} {sentinel_resp.text[:200]}")
         sentinel_token = sentinel_resp.json()["token"]
         sentinel_header = json.dumps({
             "p": "", "t": "", "c": sentinel_token,
             "id": device_id, "flow": "authorize_continue",
         })
-        log.info(f"      OK")
+        log.info(f"      Sentinel token OK")
 
         _sleep(0.5, 1.5)
 
